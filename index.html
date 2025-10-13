@@ -305,8 +305,9 @@
   <!--
     Supabase setup
     1) Replace SUPABASE_URL and SUPABASE_ANON_KEY in the script below.
-    2) Create a table named "posts" (SQL suggestion):
+    2) Run this SQL in Supabase SQL editor (adjust as needed):
 
+       create extension if not exists pgcrypto;  -- for gen_random_uuid()
        create table if not exists public.posts (
          id uuid primary key default gen_random_uuid(),
          title text not null,
@@ -318,17 +319,49 @@
          password_salt text not null,
          password_hash text not null,
          taken boolean not null default false,
-         created_at timestamp with time zone not null default now(),
-         taken_at timestamp with time zone
+         created_at timestamptz not null default now(),
+         taken_at timestamptz
        );
 
-    3) Enable RLS and add policies that allow:
-       - insert for anyone
-       - select for anyone
-       - update where taken is set to true and id matches (we verify client-side password)
-       - delete where taken = true and taken_at < now() - interval '45 minutes'
+       alter table public.posts enable row level security;
 
-    Note: Policies vary by needs; please secure according to your environment.
+       -- Anyone can read posts
+       create policy "public read posts" on public.posts
+         for select using (true);
+
+       -- Anyone can insert a post
+       create policy "public insert posts" on public.posts
+         for insert with check (true);
+
+       -- Allow only marking a post as taken without changing other fields
+       create policy "public mark taken" on public.posts
+         for update using (
+           true
+         ) with check (
+           new.taken = true and old.taken = false and
+           new.taken_at is not null and
+           -- prevent changing other columns
+           new.title = old.title and
+           new.quantity = old.quantity and
+           new.pickup_window is not distinct from old.pickup_window and
+           new.location = old.location and
+           new.contact is not distinct from old.contact and
+           new.notes is not distinct from old.notes and
+           new.password_salt = old.password_salt and
+           new.password_hash = old.password_hash and
+           new.created_at = old.created_at
+         );
+
+       -- Allow deleting posts 45 minutes after taken
+       create policy "public delete old taken" on public.posts
+         for delete using (
+           taken = true and taken_at < now() - interval '45 minutes'
+         );
+
+       -- Enable realtime
+       alter publication supabase_realtime add table public.posts;
+
+    3) In Dashboard → Database → Replication → Supabase Realtime, ensure public.posts is enabled for Insert/Update/Delete.
   -->
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -338,8 +371,8 @@
     // === CONFIG: PUT YOUR SUPABASE KEYS HERE ===
     // Replace the placeholders below with your actual project values.
     // Example URL looks like: https://xyzcompany.supabase.co
-    const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
-    const SUPABASE_ANON_KEY = 'YOUR-ANON-KEY';
+    const SUPABASE_URL = 'https://jsctulilshvqefwhqscw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzY3R1bGlsc2h2cWVmd2hxc2N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMTMyNDIsImV4cCI6MjA3NTc4OTI0Mn0.Aqnhpn8e0H5GPG0gAmy340vmfBzxWk3BKgb637kcaIk';
 
     // Initialize client
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -469,7 +502,7 @@
         .select('id,title,quantity,location,contact,notes,pickup_window,password_salt,password_hash,created_at')
         .eq('taken', false)
         .order('created_at', { ascending: false });
-      if (error) { console.error(error); showToast('Failed to load posts', '#3f0a0a'); return; }
+      if (error) { console.error(error); showToast('Failed to load posts: ' + (error.message || ''), '#3f0a0a'); return; }
       cards.innerHTML = '';
       (data || []).forEach(item => cards.appendChild(renderCard(item)));
       checkEmpty();
@@ -518,7 +551,8 @@
         showToast('Posted successfully');
       } catch (err) {
         console.error(err);
-        showToast('Could not post. Check configuration.', '#3f0a0a');
+        const msg = (err && err.message) ? err.message : 'Unknown error';
+        showToast('Could not post: ' + msg, '#3f0a0a');
       } finally {
         setLoadingForm(false);
       }

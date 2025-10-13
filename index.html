@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoodGrain — Share Surplus Food</title>
+  <meta name="description" content="GoodGrain lets anyone share surplus food for free. Post details, quantity, and pickup location so nearby people can collect it.">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --muted: #334155;
+      --text: #e5e7eb;
+      --subtext: #cbd5e1;
+      --brand: #22c55e;
+      --brand-600: #16a34a;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --card: #0b1220;
+      --ring: #22c55e33;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(1200px 800px at 10% -10%, #0b1022 10%, #0f172a 60%, #0a0f20 100%);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 24px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0b1220 0%, #0f172a 60%);
+      box-shadow: 0 10px 30px #00000066, inset 0 0 0 1px #22c55e11;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #052e16;
+      background: radial-gradient(120% 120% at 20% 20%, #bbf7d0 0%, #4ade80 45%, #22c55e 100%);
+      box-shadow: 0 6px 18px #22c55e44, inset 0 0 0 2px #ffffff55;
+      font-weight: 800;
+      transform: rotate(-6deg);
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      color: var(--subtext);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .madeby {
+      font-size: 12px;
+      color: #94a3b8;
+      border: 1px solid #22c55e33;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #052e1633;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.2fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, #0e162b, #0b1220);
+      border: 1px solid #22c55e1a;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px #00000066;
+    }
+
+    .panel h2 {
+      margin: 0 0 14px 0;
+      font-size: 18px;
+      color: #eafff3;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--subtext);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="password"], textarea {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 10px;
+      border: 1px solid #22c55e1f;
+      background: #030712;
+      color: var(--text);
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, transform 0.04s ease;
+    }
+    input:focus, textarea:focus {
+      border-color: #22c55e66;
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    textarea { resize: vertical; min-height: 84px; }
+
+    .hint {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #22c55e33;
+      color: #052e16;
+      background: linear-gradient(180deg, #86efac, #22c55e);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px #22c55e40, inset 0 0 0 1px #ffffff80;
+      transition: transform 0.05s ease, filter 0.12s ease;
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:active { transform: translateY(1px); }
+
+    .btn-secondary {
+      background: #0b1220;
+      color: #c7f0d8;
+      border: 1px solid #22c55e2b;
+      box-shadow: 0 6px 16px #00000055;
+    }
+
+    .button-danger { background: linear-gradient(180deg, #fecaca, #ef4444); color: #3b0a0a; border-color: #ef4444; box-shadow: 0 8px 18px #ef444455; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
+
+    .card {
+      border: 1px solid #22c55e1f;
+      background: linear-gradient(180deg, #0c1428, #0a0f20);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 18px #00000066;
+      display: grid;
+      gap: 10px;
+    }
+    .card-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+    .title { font-weight: 800; letter-spacing: 0.2px; }
+    .meta { font-size: 12px; color: #a1a1aa; display: flex; gap: 10px; flex-wrap: wrap; }
+    .pill { padding: 4px 8px; border: 1px solid #22c55e2b; border-radius: 999px; background: #052e1622; color: #9ef5c1; }
+
+    .empty { color: #9ca3af; font-size: 14px; border: 1px dashed #22c55e3a; border-radius: 12px; padding: 16px; text-align: center; background: #071022; }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #052e16;
+      color: #c7f0d8;
+      border: 1px solid #22c55e44;
+      box-shadow: 0 8px 20px #00000088;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: 200ms ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    footer { color: #9ca3af; text-align: center; margin: 24px 0 10px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">G</div>
+        <div>
+          <h1>GoodGrain</h1>
+          <div class="subtitle">Share surplus food. Help your community. Zero waste.</div>
+        </div>
+      </div>
+      <div class="madeby">Made by ABPS, Veraval</div>
+    </header>
+
+    <div class="grid">
+      <section class="panel" aria-labelledby="post-food-heading">
+        <h2 id="post-food-heading">Post Surplus Food</h2>
+        <form id="postForm">
+          <div>
+            <label for="title">Food title</label>
+            <input id="title" name="title" type="text" placeholder="e.g., Fresh rotis, vegetable curry" required>
+          </div>
+          <div class="row">
+            <div>
+              <label for="quantity">Quantity / Servings</label>
+              <input id="quantity" name="quantity" type="text" placeholder="e.g., ~8 rotis or 4 servings" required>
+            </div>
+            <div>
+              <label for="window">Pickup window (optional)</label>
+              <input id="window" name="window" type="text" placeholder="e.g., 6:00–7:00 PM">
+            </div>
+          </div>
+          <div>
+            <label for="location">Pickup location</label>
+            <input id="location" name="location" type="text" placeholder="e.g., ABPS Gate, Veraval" required>
+          </div>
+          <div>
+            <label for="contact">Contact (phone/WhatsApp - optional)</label>
+            <input id="contact" name="contact" type="text" placeholder="e.g., +91 98xxxxxx">
+          </div>
+          <div>
+            <label for="notes">Notes (optional)</label>
+            <textarea id="notes" name="notes" placeholder="Dietary notes, freshness, container needed, etc."></textarea>
+          </div>
+          <div class="row">
+            <div>
+              <label for="password">Pickup password</label>
+              <input id="password" name="password" type="password" placeholder="Set a password to manage this post" required>
+              <div class="hint">Required by you later to mark this post as taken.</div>
+            </div>
+            <div style="align-self:end">
+              <div class="actions">
+                <button class="btn" type="submit">Post Food</button>
+                <button class="btn btn-secondary" type="reset">Reset</button>
+              </div>
+            </div>
+          </div>
+          <div id="formStatus" class="hint"></div>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="available-heading">
+        <h2 id="available-heading">Available Near You</h2>
+        <div id="cards" class="cards" role="list"></div>
+        <div id="empty" class="empty" style="display:none">No posts yet. Be the first to share!</div>
+      </section>
+    </div>
+
+    <footer>
+      GoodGrain does not handle deliveries. Please be respectful and prompt during pickup.
+    </footer>
+  </div>
+
+  <!--
+    Supabase setup
+    1) Replace SUPABASE_URL and SUPABASE_ANON_KEY in the script below.
+    2) Create a table named "posts" (SQL suggestion):
+
+       create table if not exists public.posts (
+         id uuid primary key default gen_random_uuid(),
+         title text not null,
+         quantity text not null,
+         pickup_window text,
+         location text not null,
+         contact text,
+         notes text,
+         password_salt text not null,
+         password_hash text not null,
+         taken boolean not null default false,
+         created_at timestamp with time zone not null default now(),
+         taken_at timestamp with time zone
+       );
+
+    3) Enable RLS and add policies that allow:
+       - insert for anyone
+       - select for anyone
+       - update where taken is set to true and id matches (we verify client-side password)
+       - delete where taken = true and taken_at < now() - interval '45 minutes'
+
+    Note: Policies vary by needs; please secure according to your environment.
+  -->
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // === CONFIG: PUT YOUR SUPABASE KEYS HERE ===
+    // Replace the placeholders below with your actual project values.
+    // Example URL looks like: https://xyzcompany.supabase.co
+    const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR-ANON-KEY';
+
+    // Initialize client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Utilities
+    function showToast(message, color) {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.style.background = color || '#052e16';
+      el.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove('show'), 2400);
+    }
+
+    function toHex(buffer) {
+      const bytes = new Uint8Array(buffer);
+      const hex = [];
+      for (let i = 0; i < bytes.length; i++) {
+        const h = bytes[i].toString(16).padStart(2, '0');
+        hex.push(h);
+      }
+      return hex.join('');
+    }
+
+    async function sha256Hex(text) {
+      const enc = new TextEncoder();
+      const data = enc.encode(text);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return toHex(hash);
+    }
+
+    function randomSaltHex(size = 16) {
+      const buf = new Uint8Array(size);
+      crypto.getRandomValues(buf);
+      return Array.from(buf, b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function isoNow() { return new Date().toISOString(); }
+
+    // DOM elements
+    const form = document.getElementById('postForm');
+    const cards = document.getElementById('cards');
+    const emptyState = document.getElementById('empty');
+    const formStatus = document.getElementById('formStatus');
+
+    function setLoadingForm(isLoading) {
+      formStatus.textContent = isLoading ? 'Posting…' : '';
+      form.querySelectorAll('input, textarea, button').forEach(el => el.disabled = isLoading);
+    }
+
+    // Render card
+    function renderCard(item) {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.dataset.id = item.id;
+      card.dataset.salt = item.password_salt;
+      card.dataset.hash = item.password_hash;
+
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = item.title;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const qty = document.createElement('span'); qty.className = 'pill'; qty.textContent = item.quantity;
+      const loc = document.createElement('span'); loc.className = 'pill'; loc.textContent = item.location;
+      if (item.pickup_window) { const win = document.createElement('span'); win.className = 'pill'; win.textContent = item.pickup_window; meta.appendChild(win); }
+      meta.prepend(loc); meta.prepend(qty);
+
+      const notes = document.createElement('div');
+      notes.textContent = item.notes || '';
+      if (!item.notes) notes.style.display = 'none';
+
+      const contact = document.createElement('div');
+      contact.className = 'hint';
+      contact.textContent = item.contact ? ('Contact: ' + item.contact) : '';
+      if (!item.contact) contact.style.display = 'none';
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const takeBtn = document.createElement('button');
+      takeBtn.className = 'btn button-danger';
+      takeBtn.textContent = 'Mark as Taken';
+      takeBtn.addEventListener('click', async () => {
+        try {
+          const pwd = prompt('Enter the pickup password to mark this as taken');
+          if (!pwd) return;
+          const candidate = await sha256Hex(card.dataset.salt + ':' + pwd);
+          if (candidate !== card.dataset.hash) {
+            showToast('Incorrect password', '#3f0a0a');
+            return;
+          }
+          const { error } = await supabase.from('posts')
+            .update({ taken: true, taken_at: isoNow() })
+            .eq('id', item.id);
+          if (error) throw error;
+          showToast('Marked as taken. Thank you!');
+          card.remove();
+          checkEmpty();
+        } catch (e) {
+          console.error(e);
+          showToast('Failed to update. Please try again.', '#3f0a0a');
+        }
+      });
+      actions.appendChild(takeBtn);
+
+      const head = document.createElement('div');
+      head.className = 'card-head';
+      head.appendChild(title);
+
+      card.appendChild(head);
+      card.appendChild(meta);
+      card.appendChild(notes);
+      card.appendChild(contact);
+      card.appendChild(actions);
+
+      return card;
+    }
+
+    function checkEmpty() {
+      emptyState.style.display = cards.children.length ? 'none' : 'block';
+    }
+
+    async function loadActive() {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id,title,quantity,location,contact,notes,pickup_window,password_salt,password_hash,created_at')
+        .eq('taken', false)
+        .order('created_at', { ascending: false });
+      if (error) { console.error(error); showToast('Failed to load posts', '#3f0a0a'); return; }
+      cards.innerHTML = '';
+      (data || []).forEach(item => cards.appendChild(renderCard(item)));
+      checkEmpty();
+    }
+
+    async function cleanupTakenOld() {
+      const cutoff = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('taken', true)
+        .lt('taken_at', cutoff);
+      if (error) {
+        // This may fail if RLS does not allow deletes. Log quietly.
+        console.debug('cleanup skipped/failed:', error.message);
+      }
+    }
+
+    // Form submit
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = form.title.value.trim();
+      const quantity = form.quantity.value.trim();
+      const pickup_window = form.window.value.trim();
+      const location = form.location.value.trim();
+      const contact = form.contact.value.trim();
+      const notes = form.notes.value.trim();
+      const password = form.password.value;
+
+      if (!title || !quantity || !location || !password) {
+        showToast('Please fill required fields', '#3f0a0a');
+        return;
+      }
+      setLoadingForm(true);
+      try {
+        const salt = randomSaltHex(16);
+        const hash = await sha256Hex(salt + ':' + password);
+        const { error } = await supabase.from('posts').insert({
+          title, quantity, pickup_window, location, contact, notes,
+          password_salt: salt,
+          password_hash: hash,
+          taken: false
+        });
+        if (error) throw error;
+        form.reset();
+        showToast('Posted successfully');
+      } catch (err) {
+        console.error(err);
+        showToast('Could not post. Check configuration.', '#3f0a0a');
+      } finally {
+        setLoadingForm(false);
+      }
+    });
+
+    // Realtime updates
+    function subscribeRealtime() {
+      const channel = supabase
+        .channel('posts-realtime')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
+          if (payload.new && payload.new.taken === false) {
+            // Prepend new card
+            const el = renderCard(payload.new);
+            cards.prepend(el);
+            checkEmpty();
+          }
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
+          if (payload.new && payload.new.taken === true) {
+            const existing = cards.querySelector(`[data-id="${payload.new.id}"]`);
+            if (existing) existing.remove();
+            checkEmpty();
+          }
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
+          const existing = cards.querySelector(`[data-id="${payload.old.id}"]`);
+          if (existing) existing.remove();
+          checkEmpty();
+        })
+        .subscribe((status) => {
+          console.debug('realtime status:', status);
+        });
+      return channel;
+    }
+
+    // Boot
+    (async function init() {
+      await cleanupTakenOld();
+      await loadActive();
+      subscribeRealtime();
+      setInterval(cleanupTakenOld, 60 * 1000);
+    })();
+  </script>
+</body>
+</html>
+
+

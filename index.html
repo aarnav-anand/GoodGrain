@@ -501,19 +501,19 @@
             }, 5000);
         }
 
-        function formatTimeAgo(dateString) {
-            const now = new Date();
-            const past = new Date(dateString);
-            const diffMs = now - past;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
+        //function formatTimeAgo(dateString) {
+            //const now = new Date();
+            //const past = new Date(dateString);
+            //const diffMs = now - past;
+            //const diffMins = Math.floor(diffMs / 60000);
+            //const diffHours = Math.floor(diffMs / 3600000);
+            //const diffDays = Math.floor(diffMs / 86400000);
 
-            if (diffMins < 1) return 'Just now';
-            if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-            return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-        }
+            //if (diffMins < 1) return 'Just now';
+            //if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+           // if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+         //   return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+       // }
 
         // ============================================
         // POST FOOD FUNCTIONS
@@ -700,3 +700,4 @@
     </script>
 </body>
 </html>
+

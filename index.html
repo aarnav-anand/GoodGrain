@@ -1,603 +1,702 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GoodGrain — Share Surplus Food</title>
-  <meta name="description" content="GoodGrain lets anyone share surplus food for free. Post details, quantity, and pickup location so nearby people can collect it.">
-  <style>
-    :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --muted: #334155;
-      --text: #e5e7eb;
-      --subtext: #cbd5e1;
-      --brand: #22c55e;
-      --brand-600: #16a34a;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --card: #0b1220;
-      --ring: #22c55e33;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodGrain - Share Food, Share Hope</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: radial-gradient(1200px 800px at 10% -10%, #0b1022 10%, #0f172a 60%, #0a0f20 100%);
-      color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      line-height: 1.5;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 24px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #0b1220 0%, #0f172a 60%);
-      box-shadow: 0 10px 30px #00000066, inset 0 0 0 1px #22c55e11;
-      margin-bottom: 20px;
-    }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease-in;
+        }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+        header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
 
-    .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      color: #052e16;
-      background: radial-gradient(120% 120% at 20% 20%, #bbf7d0 0%, #4ade80 45%, #22c55e 100%);
-      box-shadow: 0 6px 18px #22c55e44, inset 0 0 0 2px #ffffff55;
-      font-weight: 800;
-      transform: rotate(-6deg);
-    }
+        header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
 
-    h1 {
-      font-size: 24px;
-      margin: 0;
-      letter-spacing: 0.5px;
-    }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
 
-    .subtitle {
-      color: var(--subtext);
-      font-size: 14px;
-      margin-top: 4px;
-    }
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
 
-    .madeby {
-      font-size: 12px;
-      color: #94a3b8;
-      border: 1px solid #22c55e33;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #052e1633;
-      white-space: nowrap;
-    }
+        .section h2 {
+            color: #dc2626;
+            margin-bottom: 25px;
+            font-size: 2em;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 10px;
+        }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1.2fr;
-      gap: 20px;
-    }
-    @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
-    }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-    .panel {
-      background: linear-gradient(180deg, #0e162b, #0b1220);
-      border: 1px solid #22c55e1a;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 8px 24px #00000066;
-    }
+        label {
+            display: block;
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
 
-    .panel h2 {
-      margin: 0 0 14px 0;
-      font-size: 18px;
-      color: #eafff3;
-    }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
 
-    form {
-      display: grid;
-      gap: 12px;
-    }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
 
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--subtext);
-      margin-bottom: 6px;
-    }
+        button {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
 
-    input[type="text"], input[type="password"], textarea {
-      width: 100%;
-      padding: 12px 12px;
-      border-radius: 10px;
-      border: 1px solid #22c55e1f;
-      background: #030712;
-      color: var(--text);
-      outline: none;
-      transition: border 0.15s ease, box-shadow 0.15s ease, transform 0.04s ease;
-    }
-    input:focus, textarea:focus {
-      border-color: #22c55e66;
-      box-shadow: 0 0 0 4px var(--ring);
-    }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.4);
+        }
 
-    textarea { resize: vertical; min-height: 84px; }
+        button:active {
+            transform: translateY(0);
+        }
 
-    .hint {
-      font-size: 12px;
-      color: #9ca3af;
-      margin-top: 4px;
-    }
+        .posts-container {
+            display: grid;
+            gap: 20px;
+            max-height: 700px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
 
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 6px;
-    }
+        .posts-container::-webkit-scrollbar {
+            width: 8px;
+        }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1px solid #22c55e33;
-      color: #052e16;
-      background: linear-gradient(180deg, #86efac, #22c55e);
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      cursor: pointer;
-      box-shadow: 0 8px 18px #22c55e40, inset 0 0 0 1px #ffffff80;
-      transition: transform 0.05s ease, filter 0.12s ease;
-    }
-    .btn:hover { filter: brightness(1.05); }
-    .btn:active { transform: translateY(1px); }
+        .posts-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
 
-    .btn-secondary {
-      background: #0b1220;
-      color: #c7f0d8;
-      border: 1px solid #22c55e2b;
-      box-shadow: 0 6px 16px #00000055;
-    }
+        .posts-container::-webkit-scrollbar-thumb {
+            background: #2563eb;
+            border-radius: 10px;
+        }
 
-    .button-danger { background: linear-gradient(180deg, #fecaca, #ef4444); color: #3b0a0a; border-color: #ef4444; box-shadow: 0 8px 18px #ef444455; }
+        .post-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            animation: fadeIn 0.5s ease-in;
+        }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-    @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
+        .post-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #2563eb;
+        }
 
-    .card {
-      border: 1px solid #22c55e1f;
-      background: linear-gradient(180deg, #0c1428, #0a0f20);
-      border-radius: 14px;
-      padding: 14px;
-      box-shadow: 0 8px 18px #00000066;
-      display: grid;
-      gap: 10px;
-    }
-    .card-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
-    .title { font-weight: 800; letter-spacing: 0.2px; }
-    .meta { font-size: 12px; color: #a1a1aa; display: flex; gap: 10px; flex-wrap: wrap; }
-    .pill { padding: 4px 8px; border: 1px solid #22c55e2b; border-radius: 999px; background: #052e1622; color: #9ef5c1; }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
 
-    .empty { color: #9ca3af; font-size: 14px; border: 1px dashed #22c55e3a; border-radius: 12px; padding: 16px; text-align: center; background: #071022; }
+        .post-type {
+            background: #2563eb;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
 
-    .toast {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #052e16;
-      color: #c7f0d8;
-      border: 1px solid #22c55e44;
-      box-shadow: 0 8px 20px #00000088;
-      transform: translateY(20px);
-      opacity: 0;
-      transition: 200ms ease;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
+        .post-quantity {
+            color: #dc2626;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
 
-    footer { color: #9ca3af; text-align: center; margin: 24px 0 10px; font-size: 12px; }
-  </style>
+        .post-description {
+            color: #4b5563;
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .post-address {
+            background: #fef3c7;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 12px 0;
+            color: #92400e;
+            font-weight: 500;
+        }
+
+        .post-contact {
+            color: #2563eb;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+
+        .post-time {
+            color: #9ca3af;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            margin-top: 10px;
+            width: auto;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-content h3 {
+            color: #dc2626;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .cancel-btn {
+            background: #6b7280;
+        }
+
+        .cancel-btn:hover {
+            background: #4b5563;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #dc2626;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 2.5em;
+            }
+
+            .posts-container {
+                max-height: 500px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="logo">G</div>
-        <div>
-          <h1>GoodGrain</h1>
-          <div class="subtitle">Share surplus food. Help your community. Zero waste.</div>
+    <div class="container">
+        <header>
+            <h1>🌾 GoodGrain</h1>
+            <p>Share Food, Share Hope - Connecting Surplus with Need</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Post Food Section -->
+            <div class="section">
+                <h2>📤 Post Surplus Food</h2>
+                <div id="postAlert"></div>
+                <form id="postForm">
+                    <div class="form-group">
+                        <label for="foodType">Food Type *</label>
+                        <select id="foodType" required>
+                            <option value="">Select food type</option>
+                            <option value="Grains">Grains</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Cooked Food">Cooked Food</option>
+                            <option value="Packaged Food">Packaged Food</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantity">Quantity *</label>
+                        <input type="text" id="quantity" placeholder="e.g., 5 kg, 20 servings" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" placeholder="Additional details about the food..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Pickup Address *</label>
+                        <textarea id="address" placeholder="Full address for pickup" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">Contact Number *</label>
+                        <input type="tel" id="contact" placeholder="Your contact number" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Set Password (for deleting post) *</label>
+                        <input type="password" id="password" placeholder="Set a password to manage this post" required>
+                    </div>
+
+                    <button type="submit">Post Food Donation</button>
+                </form>
+            </div>
+
+            <!-- Discovery Section -->
+            <div class="section">
+                <h2>🔍 Discover Available Food</h2>
+                <div id="postsContainer" class="posts-container">
+                    <div class="loading">Loading posts...</div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="madeby">Made by ABPS, Veraval</div>
-    </header>
-
-    <div class="grid">
-      <section class="panel" aria-labelledby="post-food-heading">
-        <h2 id="post-food-heading">Post Surplus Food</h2>
-        <form id="postForm">
-          <div>
-            <label for="title">Food title</label>
-            <input id="title" name="title" type="text" placeholder="e.g., Fresh rotis, vegetable curry" required>
-          </div>
-          <div class="row">
-            <div>
-              <label for="quantity">Quantity / Servings</label>
-              <input id="quantity" name="quantity" type="text" placeholder="e.g., ~8 rotis or 4 servings" required>
-            </div>
-            <div>
-              <label for="window">Pickup window (optional)</label>
-              <input id="window" name="window" type="text" placeholder="e.g., 6:00–7:00 PM">
-            </div>
-          </div>
-          <div>
-            <label for="location">Pickup location</label>
-            <input id="location" name="location" type="text" placeholder="e.g., ABPS Gate, Veraval" required>
-          </div>
-          <div>
-            <label for="contact">Contact (phone/WhatsApp - optional)</label>
-            <input id="contact" name="contact" type="text" placeholder="e.g., +91 98xxxxxx">
-          </div>
-          <div>
-            <label for="notes">Notes (optional)</label>
-            <textarea id="notes" name="notes" placeholder="Dietary notes, freshness, container needed, etc."></textarea>
-          </div>
-          <div class="row">
-            <div>
-              <label for="password">Pickup password</label>
-              <input id="password" name="password" type="password" placeholder="Set a password to manage this post" required>
-              <div class="hint">Required by you later to mark this post as taken.</div>
-            </div>
-            <div style="align-self:end">
-              <div class="actions">
-                <button class="btn" type="submit">Post Food</button>
-                <button class="btn btn-secondary" type="reset">Reset</button>
-              </div>
-            </div>
-          </div>
-          <div id="formStatus" class="hint"></div>
-        </form>
-      </section>
-
-      <section class="panel" aria-labelledby="available-heading">
-        <h2 id="available-heading">Available Near You</h2>
-        <div id="cards" class="cards" role="list"></div>
-        <div id="empty" class="empty" style="display:none">No posts yet. Be the first to share!</div>
-      </section>
     </div>
 
-    <footer>
-      GoodGrain does not handle deliveries. Please be respectful and prompt during pickup.
-    </footer>
-  </div>
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Delete Post</h3>
+            <p>Enter the password to delete this post:</p>
+            <div class="form-group">
+                <input type="password" id="deletePassword" placeholder="Enter password">
+            </div>
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+                <button onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
 
-  <!--
-    Supabase setup
-    1) Replace SUPABASE_URL and SUPABASE_ANON_KEY in the script below.
-    2) Run this SQL in Supabase SQL editor (adjust as needed):
-
-       create extension if not exists pgcrypto;  -- for gen_random_uuid()
-       create table if not exists public.posts (
-         id uuid primary key default gen_random_uuid(),
-         title text not null,
-         quantity text not null,
-         pickup_window text,
-         location text not null,
-         contact text,
-         notes text,
-         password_salt text not null,
-         password_hash text not null,
-         taken boolean not null default false,
-         created_at timestamptz not null default now(),
-         taken_at timestamptz
-       );
-
-       alter table public.posts enable row level security;
-
-       -- Anyone can read posts
-       create policy "public read posts" on public.posts
-         for select using (true);
-
-       -- Anyone can insert a post
-       create policy "public insert posts" on public.posts
-         for insert with check (true);
-
-       -- Allow only marking a post as taken without changing other fields
-       create policy "public mark taken" on public.posts
-         for update using (
-           true
-         ) with check (
-           new.taken = true and old.taken = false and
-           new.taken_at is not null and
-           -- prevent changing other columns
-           new.title = old.title and
-           new.quantity = old.quantity and
-           new.pickup_window is not distinct from old.pickup_window and
-           new.location = old.location and
-           new.contact is not distinct from old.contact and
-           new.notes is not distinct from old.notes and
-           new.password_salt = old.password_salt and
-           new.password_hash = old.password_hash and
-           new.created_at = old.created_at
-         );
-
-       -- Allow deleting posts 45 minutes after taken
-       create policy "public delete old taken" on public.posts
-         for delete using (
-           taken = true and taken_at < now() - interval '45 minutes'
-         );
-
-       -- Enable realtime
-       alter publication supabase_realtime add table public.posts;
-
-    3) In Dashboard → Database → Replication → Supabase Realtime, ensure public.posts is enabled for Insert/Update/Delete.
-  -->
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    // === CONFIG: PUT YOUR SUPABASE KEYS HERE ===
-    // Replace the placeholders below with your actual project values.
-    // Example URL looks like: https://xyzcompany.supabase.co
-    const SUPABASE_URL = 'https://lbwmasfvdgxjwmiodruy.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxid21hc2Z2ZGd4andtaW9kcnV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3NTMyNTEsImV4cCI6MjA4MzMyOTI1MX0.s6JivHmqe-8PSVsNpZF7uxd6pFZhKJbBy-MaMoR30Ow';
-
-    // Initialize client
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Utilities
-    function showToast(message, color) {
-      const el = document.getElementById('toast');
-      el.textContent = message;
-      el.style.background = color || '#052e16';
-      el.classList.add('show');
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => el.classList.remove('show'), 2400);
-    }
-
-    function toHex(buffer) {
-      const bytes = new Uint8Array(buffer);
-      const hex = [];
-      for (let i = 0; i < bytes.length; i++) {
-        const h = bytes[i].toString(16).padStart(2, '0');
-        hex.push(h);
-      }
-      return hex.join('');
-    }
-
-    async function sha256Hex(text) {
-      const enc = new TextEncoder();
-      const data = enc.encode(text);
-      const hash = await crypto.subtle.digest('SHA-256', data);
-      return toHex(hash);
-    }
-
-    function randomSaltHex(size = 16) {
-      const buf = new Uint8Array(size);
-      crypto.getRandomValues(buf);
-      return Array.from(buf, b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function isoNow() { return new Date().toISOString(); }
-
-    // DOM elements
-    const form = document.getElementById('postForm');
-    const cards = document.getElementById('cards');
-    const emptyState = document.getElementById('empty');
-    const formStatus = document.getElementById('formStatus');
-
-    function setLoadingForm(isLoading) {
-      formStatus.textContent = isLoading ? 'Posting…' : '';
-      form.querySelectorAll('input, textarea, button').forEach(el => el.disabled = isLoading);
-    }
-
-    // Render card
-    function renderCard(item) {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.id = item.id;
-      card.dataset.salt = item.password_salt;
-      card.dataset.hash = item.password_hash;
-
-      const title = document.createElement('div');
-      title.className = 'title';
-      title.textContent = item.title;
-
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      const qty = document.createElement('span'); qty.className = 'pill'; qty.textContent = item.quantity;
-      const loc = document.createElement('span'); loc.className = 'pill'; loc.textContent = item.location;
-      if (item.pickup_window) { const win = document.createElement('span'); win.className = 'pill'; win.textContent = item.pickup_window; meta.appendChild(win); }
-      meta.prepend(loc); meta.prepend(qty);
-
-      const notes = document.createElement('div');
-      notes.textContent = item.notes || '';
-      if (!item.notes) notes.style.display = 'none';
-
-      const contact = document.createElement('div');
-      contact.className = 'hint';
-      contact.textContent = item.contact ? ('Contact: ' + item.contact) : '';
-      if (!item.contact) contact.style.display = 'none';
-
-      const actions = document.createElement('div');
-      actions.className = 'actions';
-      const takeBtn = document.createElement('button');
-      takeBtn.className = 'btn button-danger';
-      takeBtn.textContent = 'Mark as Taken';
-      takeBtn.addEventListener('click', async () => {
-        try {
-          const pwd = prompt('Enter the pickup password to mark this as taken');
-          if (!pwd) return;
-          const candidate = await sha256Hex(card.dataset.salt + ':' + pwd);
-          if (candidate !== card.dataset.hash) {
-            showToast('Incorrect password', '#3f0a0a');
-            return;
-          }
-          const { error } = await supabase.from('posts')
-            .update({ taken: true, taken_at: isoNow() })
-            .eq('id', item.id);
-          if (error) throw error;
-          showToast('Marked as taken. Thank you!');
-          card.remove();
-          checkEmpty();
-        } catch (e) {
-          console.error(e);
-          showToast('Failed to update. Please try again.', '#3f0a0a');
+    <script>
+        // ============================================
+        // SUPABASE CONFIGURATION
+        // ============================================
+        // TODO: Replace these with your actual Supabase credentials
+        const SUPABASE_URL = 'https://gqlmxfzmspavgecklxof.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxbG14Znptc3BhdmdlY2tseG9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3NTkxMDAsImV4cCI6MjA4MzMzNTEwMH0.IWJZ6qNfjSj1wy76SVOljc6okNsNuqnbrLI4-hquQ2A';
+        
+        // Initialize Supabase client
+        let supabaseClient;
+        if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE') {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-      });
-      actions.appendChild(takeBtn);
 
-      const head = document.createElement('div');
-      head.className = 'card-head';
-      head.appendChild(title);
+        // ============================================
+        // DATABASE SETUP INSTRUCTIONS
+        // ============================================
+        /*
+        Create a table in Supabase with the following SQL:
 
-      card.appendChild(head);
-      card.appendChild(meta);
-      card.appendChild(notes);
-      card.appendChild(contact);
-      card.appendChild(actions);
+        CREATE TABLE food_posts (
+            id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+            food_type TEXT NOT NULL,
+            quantity TEXT NOT NULL,
+            description TEXT,
+            address TEXT NOT NULL,
+            contact TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
 
-      return card;
-    }
+        -- Enable Row Level Security
+        ALTER TABLE food_posts ENABLE ROW LEVEL SECURITY;
 
-    function checkEmpty() {
-      emptyState.style.display = cards.children.length ? 'none' : 'block';
-    }
+        -- Create policies for public access
+        CREATE POLICY "Allow public read" ON food_posts FOR SELECT USING (true);
+        CREATE POLICY "Allow public insert" ON food_posts FOR INSERT WITH CHECK (true);
+        CREATE POLICY "Allow public delete" ON food_posts FOR DELETE USING (true);
+        */
 
-    async function loadActive() {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('id,title,quantity,location,contact,notes,pickup_window,password_salt,password_hash,created_at')
-        .eq('taken', false)
-        .order('created_at', { ascending: false });
-      if (error) { console.error(error); showToast('Failed to load posts: ' + (error.message || ''), '#3f0a0a'); return; }
-      cards.innerHTML = '';
-      (data || []).forEach(item => cards.appendChild(renderCard(item)));
-      checkEmpty();
-    }
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
+        let currentDeleteId = null;
 
-    async function cleanupTakenOld() {
-      const cutoff = new Date(Date.now() - 45 * 60 * 1000).toISOString();
-      const { error } = await supabase
-        .from('posts')
-        .delete()
-        .eq('taken', true)
-        .lt('taken_at', cutoff);
-      if (error) {
-        // This may fail if RLS does not allow deletes. Log quietly.
-        console.debug('cleanup skipped/failed:', error.message);
-      }
-    }
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        
+        // Simple hash function for password (in production, use proper backend hashing)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-    // Form submit
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const title = form.title.value.trim();
-      const quantity = form.quantity.value.trim();
-      const pickup_window = form.window.value.trim();
-      const location = form.location.value.trim();
-      const contact = form.contact.value.trim();
-      const notes = form.notes.value.trim();
-      const password = form.password.value;
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
 
-      if (!title || !quantity || !location || !password) {
-        showToast('Please fill required fields', '#3f0a0a');
-        return;
-      }
-      setLoadingForm(true);
-      try {
-        const salt = randomSaltHex(16);
-        const hash = await sha256Hex(salt + ':' + password);
-        const { error } = await supabase.from('posts').insert({
-          title, quantity, pickup_window, location, contact, notes,
-          password_salt: salt,
-          password_hash: hash,
-          taken: false
+        function formatTimeAgo(dateString) {
+            const now = new Date();
+            const past = new Date(dateString);
+            const diffMs = now - past;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        }
+
+        // ============================================
+        // POST FOOD FUNCTIONS
+        // ============================================
+        
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const foodType = document.getElementById('foodType').value;
+            const quantity = document.getElementById('quantity').value;
+            const description = document.getElementById('description').value;
+            const address = document.getElementById('address').value;
+            const contact = document.getElementById('contact').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                if (!supabaseClient) {
+                    showAlert('postAlert', '❌ Please configure Supabase credentials first!', 'error');
+                    return;
+                }
+
+                const passwordHash = await hashPassword(password);
+                
+                const { data, error } = await supabaseClient
+                    .from('food_posts')
+                    .insert([
+                        {
+                            food_type: foodType,
+                            quantity: quantity,
+                            description: description,
+                            address: address,
+                            contact: contact,
+                            password_hash: passwordHash
+                        }
+                    ]);
+
+                if (error) throw error;
+
+                showAlert('postAlert', '✅ Food post created successfully!', 'success');
+                document.getElementById('postForm').reset();
+                loadPosts();
+            } catch (error) {
+                showAlert('postAlert', `❌ Error: ${error.message}`, 'error');
+            }
         });
-        if (error) throw error;
-        form.reset();
-        showToast('Posted successfully');
-      } catch (err) {
-        console.error(err);
-        const msg = (err && err.message) ? err.message : 'Unknown error';
-        showToast('Could not post: ' + msg, '#3f0a0a');
-      } finally {
-        setLoadingForm(false);
-      }
-    });
 
-    // Realtime updates
-    function subscribeRealtime() {
-      const channel = supabase
-        .channel('posts-realtime')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
-          if (payload.new && payload.new.taken === false) {
-            // Prepend new card
-            const el = renderCard(payload.new);
-            cards.prepend(el);
-            checkEmpty();
-          }
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
-          if (payload.new && payload.new.taken === true) {
-            const existing = cards.querySelector(`[data-id="${payload.new.id}"]`);
-            if (existing) existing.remove();
-            checkEmpty();
-          }
-        })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
-          const existing = cards.querySelector(`[data-id="${payload.old.id}"]`);
-          if (existing) existing.remove();
-          checkEmpty();
-        })
-        .subscribe((status) => {
-          console.debug('realtime status:', status);
+        // ============================================
+        // LOAD AND DISPLAY POSTS
+        // ============================================
+        
+        async function loadPosts() {
+            const container = document.getElementById('postsContainer');
+            
+            if (!supabaseClient) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p style="color: #dc2626;">⚠️ Please configure your Supabase credentials in the code.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('food_posts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <h3>No posts yet</h3>
+                            <p>Be the first to donate food!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = data.map(post => `
+                    <div class="post-card">
+                        <div class="post-header">
+                            <span class="post-type">${post.food_type}</span>
+                            <span class="post-quantity">${post.quantity}</span>
+                        </div>
+                        ${post.description ? `<div class="post-description">${post.description}</div>` : ''}
+                        <div class="post-address">📍 ${post.address}</div>
+                        <div class="post-contact">📞 ${post.contact}</div>
+                        <div class="post-time">${formatTimeAgo(post.created_at)}</div>
+                        <button class="delete-btn" onclick="openDeleteModal('${post.id}')">🗑️ Delete Post</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p style="color: #dc2626;">Error loading posts: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================
+        // DELETE POST FUNCTIONS
+        // ============================================
+        
+        function openDeleteModal(postId) {
+            currentDeleteId = postId;
+            document.getElementById('deleteModal').style.display = 'flex';
+            document.getElementById('deletePassword').value = '';
+            document.getElementById('deletePassword').focus();
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            currentDeleteId = null;
+        }
+
+        async function confirmDelete() {
+            const password = document.getElementById('deletePassword').value;
+            
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+
+            if (!supabaseClient) {
+                alert('❌ Supabase not configured');
+                return;
+            }
+
+            try {
+                const passwordHash = await hashPassword(password);
+                
+                // First, verify the password
+                const { data: posts, error: fetchError } = await supabaseClient
+                    .from('food_posts')
+                    .select('password_hash')
+                    .eq('id', currentDeleteId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                if (posts.password_hash !== passwordHash) {
+                    alert('❌ Incorrect password');
+                    return;
+                }
+
+                // Delete the post
+                const { error: deleteError } = await supabaseClient
+                    .from('food_posts')
+                    .delete()
+                    .eq('id', currentDeleteId);
+
+                if (deleteError) throw deleteError;
+
+                closeDeleteModal();
+                loadPosts();
+                alert('✅ Post deleted successfully');
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', (e) => {
+            if (e.target.id === 'deleteModal') {
+                closeDeleteModal();
+            }
         });
-      return channel;
-    }
 
-    // Boot
-    (async function init() {
-      await cleanupTakenOld();
-      await loadActive();
-      subscribeRealtime();
-      setInterval(cleanupTakenOld, 60 * 1000);
-    })();
-  </script>
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
+        // Load posts on page load
+        loadPosts();
+
+        // Refresh posts every 30 seconds
+        setInterval(loadPosts, 30000);
+    </script>
 </body>
 </html>
-
-
-
